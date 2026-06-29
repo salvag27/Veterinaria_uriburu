@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veterinaria Uriburu - Reservas Online</title>
+    <style>
+        /* PALETA DE COLORES EXTRAÍDA DEL LOGOTIPO DE VETERINARIA URIBURU */
+        :root {
+            --primary: #f09ab5;      /* Rosa (De la huella del banner) */
+            --primary-dark: #db7593; /* Rosa oscuro */
+            --secondary: #292929;    /* Gris carbón (Del texto "Veterinaria Uriburu") */
+            --neutral-dark: #1f2937;
+            --neutral-light: #fdf2f8;/* Rosa muy claro/pastel de acento */
+            --white: #ffffff;
+            --error: #ef4444;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            color: var(--neutral-dark);
+            background-color: #fafafa;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* NAVEGACIÓN */
+        header {
+            background-color: var(--white);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo a {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            height: 45px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--neutral-dark);
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .page-view {
+            display: none;
+        }
+
+        .page-view.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* DISEÑO DE INICIO */
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 3rem;
+            padding: 2rem 0;
+        }
+
+        .hero-text {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .hero-text h1 {
+            font-size: 2.5rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .hero-text p {
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--neutral-light);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* RECTÁNGULO ROSA CLARO CON DISEÑO DE MASCOTAS COLGANDO */
+        .hero-image {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--neutral-light);
+            height: 320px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            position: relative; /* Permite posicionamiento absoluto de los animales */
+            overflow: visible;  /* Impide que se recorten las cabezas de las mascotas hacia arriba */
+            margin-top: 100px;  /* Da espacio para que las cabezas de las mascotas no choquen con elementos superiores */
+        }
+
+        /* Imagen de animales colgados */
+        .peeking-animals {
+            position: absolute;
+            bottom: calc(100% - 22px); /* Se solapa 22px con el borde superior para simular agarre */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 480px;
+            height: auto;
+            pointer-events: none; /* Permite hacer clic a través de los espacios transparentes de la imagen */
+            z-index: 5;
+        }
+
+        .hero-image-logo {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            z-index: 2; /* Queda detrás de los animales colgados pero al frente del rectángulo */
+            border-radius: 12px;
+        }
+
+        /* CARRUSEL DE SERVICIOS */
+        .services-section {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .services-section h2 {
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .carousel-track-container {
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .carousel-slide {
+            min-width: 33.333%;
+            padding: 0 0.75rem;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        .card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .carousel-btn {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+
+        .carousel-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* CONTACTO */
+        .contact-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3rem;
+        }
+
+        .contact-info {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .contact-info h2, .contact-info h3 {
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .contact-map {
+            flex: 1.2;
+            min-width: 300px;
+            height: 380px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* FORMULARIO DE RESERVAS CON MASCOTAS COLGANDO Y SPOTLIGHT */
+        .booking-card {
+            background-color: var(--white);
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
+            position: relative; /* Necesario para posicionar absolutamente las mascotas */
+            overflow: visible;  /* Permite que las cabezas de las mascotas sobresalgan del borde */
+            margin-top: 100px;  /* Espacio hacia arriba para que las cabezas tengan lugar */
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* CÍRCULO DE CARGA (SPINNER) */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(240, 154, 181, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* EFECTO SPOTLIGHT GLOBAL (Disponible en escritorio y móvil) */
+        .spotlight-container {
+            position: relative;
+            overflow: hidden; /* Evita que el destello se salga de los bordes de la tarjeta */
+        }
+
+        /* El haz de luz del Spotlight */
+        .spotlight-glow {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            /* Genera un degradado radial usando el rosa de tu marca */
+            background: radial-gradient(circle, rgba(240, 154, 181, 0.15) 0%, rgba(240, 154, 181, 0) 70%);
+            pointer-events: none; /* Permite hacer clics a través de la luz */
+            opacity: 0;
+            transition: opacity 0.3s ease, left 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translate(-50%, -50%);
+            z-index: 1; /* Se posiciona detrás del texto pero por encima del fondo */
+        }
+
+        /* Asegura que el contenido interno de las tarjetas quede por encima de la luz */
+        .spotlight-container * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            display: none;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .alert-error { background-color: #fee2e2; color: var(--error); border: 1px solid #fca5a5; }
+        .alert-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+
+        footer {
+            background-color: var(--secondary);
+            color: var(--white);
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--white);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                padding: 1rem 0;
+                text-align: center;
+            }
+            .nav-links.active { display: flex; }
+            .menu-toggle { display: block; }
+            .carousel-slide {
+                min-width: 100%;
+                padding: 0;
+            }
+            
+            /* REAJUSTE DE CONTENEDOR HERO EN CELULARES */
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
+            }
+            
+            .hero-text {
+                width: 100%;
+                margin-bottom: 1.5rem; /* Margen para asegurar separación extra */
+            }
+
+            /* REAJUSTE DE MARGEN SEGURO PARA EVITAR QUE SE TAPE EL BOTÓN */
+            .hero-image {
+                margin-top: 180px; /* Aumentado a 180px para dar espacio físico de sobra a las cabezas */
+                width: 100%;
+                max-width: 400px;
+                height: 260px; /* Reducción de altura celeste en móviles */
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .booking-card {
+                margin-top: 80px; /* Ajuste menor para formulario en móviles */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MENÚ -->
+    <header>
+        <nav class="nav-container">
+            <div class="logo">
+                <a onclick="navigateTo('home')">
+                    <!-- Símbolo de huella en rosa de tu marca -->
+                    <span style="color: var(--primary);">🐾</span>
+                    Veterinaria Uriburu
+                </a>
+            </div>
+            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a onclick="navigateTo('home')" class="nav-item active" id="link-home">Inicio</a></li>
+                <li><a onclick="navigateTo('contact')" class="nav-item" id="link-contact">Contacto</a></li>
+                <li><a onclick="navigateTo('booking')" class="nav-item" id="link-booking">Reservar Turno</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        
+        <!-- VISTA: INICIO -->
+        <section id="view-home" class="page-view active">
+            <div class="hero">
+                <div class="hero-text">
+                    <h1>Veterinaria Uriburu</h1>
+                    <p>Atención médica veterinaria en el barrio de Recoleta. Cuidamos la salud de tus mascotas con la dedicación que se merecen. Solicita tu turno online.</p>
+                    <div class="rating-badge">
+                        <span>⭐ Calificación: 4.8/5 estrellas</span>
+                    </div>
+                    <div>
+                        <button onclick="navigateTo('booking')" class="btn">Reservar Turno</button>
+                    </div>
+                </div>
+                <!-- RECTÁNGULO DE LOGOTIPO CON MASCOTAS COLGANDO -->
+                <div class="hero-image">
+                    <!-- Imagen de mascotas colgadas con transparencia -->
+                    <img src="mascotas.png" alt="Mascotas colgadas de la tarjeta" class="peeking-animals">
+                    <!-- Banner de la veterinaria centrado -->
+                    <img src="banner.png" alt="Veterinaria Uriburu Logo" class="hero-image-logo">
+                </div>
+            </div>
+
+            <!-- CARRUSEL DE SERVICIOS -->
+            <div class="services-section">
+                <h2>Nuestros Servicios</h2>
+                <div class="carousel-container">
+                    <button class="carousel-btn" onclick="moveCarousel(-1)">&#10094;</button>
+                    <div class="carousel-track-container">
+                        <div class="carousel-track" id="carouselTrack">
+                            <div class="carousel-slide">
+                                <div class="card spotlight-container">
+                                    <h3>Consulta Clínica</h3>
+                                    <p>Revisiones de rutina, diagnósticos y medicina preventiva integral.</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="card spotlight-container">
+                                    <h3>Vacunación</h3>
+                                    <p>Aplicación de vacunas esenciales para mantener protegida a tu mascota.</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="card spotlight-container">
+                                    <h3>Desparasitación</h3>
+                                    <p>Planes personalizados de control para parásitos internos y externos.</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <div class="card spotlight-container">
+                                    <h3>Atención Especializada</h3>
+                                    <p>Asistencia focalizada para tratamientos específicos y crónicos.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn" onclick="moveCarousel(1)">&#10095;</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: CONTACTO -->
+        <section id="view-contact" class="page-view">
+            <h1>Contacto y Ubicación</h1>
+            <div class="contact-layout" style="margin-top: 1.5rem;">
+                <div class="contact-info">
+                    <h2>Veterinaria Uriburu</h2>
+                    <p><strong>Dirección:</strong> Pres. José Evaristo Uriburu 1200, C1114 CABA<br><small style="color: #6b7280;">(Barrio de Recoleta, Ciudad Autónoma de Buenos Aires)</small></p>
+                    <p><strong>Teléfono:</strong> <a href="tel:+541148220000" style="color: var(--primary); text-decoration: none; font-weight: bold;">+54 11 4822-0000</a></p>
+                    <p><strong>Redes Sociales:</strong> <a href="https://facebook.com" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: bold;">Página de Facebook Oficial</a></p>
+                    
+                    <h3>Horarios de Atención</h3>
+                    <p><strong>Lunes a Viernes:</strong> 10:00 a 20:00 hrs. (Horario corrido)<br>
+                       <strong>Sábados:</strong> 10:00 a 13:00 hrs.<br>
+                       <strong style="color: var(--error);">Domingos:</strong> Cerrado.
+                    </p>
+                </div>
+                <div class="contact-map">
+                    <iframe style="width:100%; height:100%; border:0;" src="https://maps.google.com/maps?q=Pres.%20Jose%20Evaristo%20Uriburu%201200%2C%20CABA&t=&z=16&ie=UTF8&iwloc=&output=embed" loading="lazy"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: RESERVAS -->
+        <section id="view-booking" class="page-view">
+            <!-- SE AÑADE LA CLASE spotlight-container -->
+            <div class="booking-card spotlight-container">
+                <!-- Imagen transparente de los animales colgados -->
+                <img src="mascotas.png" alt="Mascotas" class="peeking-animals">
+                
+                <h2>Agendar Turno Online</h2>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">Ingresa los datos para registrar el turno directamente en el calendario.</p>
+
+                <div id="alertBox" class="alert"></div>
+
+                <form id="appointmentForm" onsubmit="handleFormSubmit(event)">
+                    <!-- 1. NOMBRE DEL CLIENTE -->
+                    <div class="form-group">
+                        <label for="inputTutor">Nombre del Cliente</label>
+                        <input type="text" id="inputTutor" class="form-control" placeholder="Ej: Sofía Gómez" required>
+                    </div>
+
+                    <!-- 2. MAIL DE CONTACTO -->
+                    <div class="form-group">
+                        <label for="inputEmail">Mail de Contacto</label>
+                        <input type="email" id="inputEmail" class="form-control" placeholder="Ej: sofia@correo.com" required>
+                    </div>
+
+                    <!-- 3. NOMBRE DE LA MASCOTA -->
+                    <div class="form-group">
+                        <label for="inputPet">Nombre de la Mascota</label>
+                        <input type="text" id="inputPet" class="form-control" placeholder="Ej: Milo" required>
+                    </div>
+
+                    <!-- 4. FECHA DE TURNO -->
+                    <div class="form-group">
+                        <label for="inputDate">Fecha del Turno</label>
+                        <input type="date" id="inputDate" class="form-control" onchange="updateAvailableHours()" required>
+                    </div>
+
+                    <!-- 5. HORA DE TURNO -->
+                    <div class="form-group">
+                        <label for="inputTime">Hora del Turno</label>
+                        <select id="inputTime" class="form-control" disabled required>
+                            <option value="">-- Primero selecciona una fecha --</option>
+                        </select>
+                    </div>
+
+                    <!-- 6. MOTIVO -->
+                    <div class="form-group">
+                        <label for="inputMotivo">Motivo</label>
+                        <select id="inputMotivo" class="form-control" required>
+                            <option value="">-- Selecciona el motivo --</option>
+                            <option value="Consulta Clínica">Consulta Clínica</option>
+                            <option value="Vacunación">Vacunación</option>
+                            <option value="Desparasitación">Desparasitación</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <!-- 7. DESCRIPCIÓN (Opcional) -->
+                    <div class="form-group">
+                        <label for="inputDescripcion">Descripción <span style="font-weight: normal; color: #6b7280;">(Opcional)</span></label>
+                        <textarea id="inputDescripcion" class="form-control" rows="3" placeholder="Comentarios adicionales o síntomas..."></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn" style="width: 100%;">Confirmar Reserva</button>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Veterinaria Uriburu. Pres. José Evaristo Uriburu 1200, CABA.</p>
+    </footer>
+
+    <!-- SCRIPT -->
+    <script>
+        // --- PEGA AQUÍ TU ENLACE DE GOOGLE APPS SCRIPT ---
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7EwJ87dLrb_cHrP_HaBI1JSQQJyDjDmOBWO8P6kDfh97xorNf1mYRqxwGkG2S9lDRTA/exec";
+
+        // CARRUSEL
+        let currentSlideIndex = 0;
+        function moveCarousel(direction) {
+            const track = document.getElementById('carouselTrack');
+            const slides = document.querySelectorAll('.carousel-slide');
+            const totalSlides = slides.length;
+            
+            const isMobile = window.innerWidth <= 768;
+            const visibleSlides = isMobile ? 1 : 3;
+            const maxIndex = totalSlides - visibleSlides;
+
+            currentSlideIndex += direction;
+
+            if (currentSlideIndex < 0) {
+                currentSlideIndex = maxIndex;
+            } else if (currentSlideIndex > maxIndex) {
+                currentSlideIndex = 0;
+            }
+
+            const percentage = currentSlideIndex * (100 / visibleSlides);
+            track.style.transform = `translateX(-${percentage}%)`;
+        }
+
+        window.addEventListener('resize', () => {
+            currentSlideIndex = 0;
+            document.getElementById('carouselTrack').style.transform = `translateX(0%)`;
+        });
+
+        // NAVEGACIÓN
+        function navigateTo(viewId) {
+            document.getElementById('navLinks').classList.remove('active');
+            document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('link-' + viewId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        const inputDate = document.getElementById('inputDate');
+        const inputTime = document.getElementById('inputTime');
+        const alertBox = document.getElementById('alertBox');
+        inputDate.setAttribute('min', new Date().toISOString().split('T')[0]);
+
+        // CONSULTAR DISPONIBILIDAD
+        async function updateAvailableHours() {
+            const selectedDate = inputDate.value;
+            inputTime.innerHTML = '';
+            inputTime.disabled = true;
+            hideAlert();
+
+            if (!selectedDate) return;
+
+            try {
+                inputTime.innerHTML = '<option value="">Consultando disponibilidad en Google Calendar...</option>';
+                
+                const response = await fetch(`${APPS_SCRIPT_URL}?date=${selectedDate}`);
+                if (!response.ok) throw new Error();
+
+                const availableHours = await response.json();
+                inputTime.innerHTML = '';
+
+                if (availableHours.length === 0) {
+                    showAlert('La clínica está cerrada o no hay turnos libres para esta fecha.', 'error');
+                    inputTime.innerHTML = '<option value="">-- No hay turnos --</option>';
+                    return;
+                }
+
+                inputTime.disabled = false;
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '-- Seleccione una hora --';
+                inputTime.appendChild(defaultOption);
+
+                availableHours.forEach(hour => {
+                    const option = document.createElement('option');
+                    option.value = hour;
+                    option.textContent = hour + ' hs.';
+                    inputTime.appendChild(option);
+                });
+
+            } catch (error) {
+                showAlert('Error al conectar con Google. Revisa si configuraste correctamente la URL.', 'error');
+                inputTime.innerHTML = '<option value="">-- Error de carga --</option>';
+            }
+        }
+
+        // CONFIRMAR RESERVA (POST)
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const tutor = document.getElementById('inputTutor').value.trim();
+            const email = document.getElementById('inputEmail').value.trim();
+            const pet = document.getElementById('inputPet').value.trim();
+            const date = inputDate.value;
+            const time = inputTime.value;
+            const motivo = document.getElementById('inputMotivo').value;
+            const descripcion = document.getElementById('inputDescripcion').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+
+            const payload = { tutor, email, mascota: pet, fecha: date, hora: time, motivo, descripcion };
+
+            try {
+                // Se deshabilita el botón y se muestra la animación del círculo de carga
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner"></span> Enviando reserva...';
+
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Mensaje con la advertencia de revisar la carpeta de Spam
+                    showAlert('¡Reserva registrada con éxito! Los datos fueron guardados y se envió un mail de confirmación. <br><strong style="color: #065f46;">Por favor, revise su casilla de correo de entrada y también la carpeta de correo no deseado (Spam).</strong>', 'success');
+                    document.getElementById('appointmentForm').reset();
+                    inputTime.disabled = true;
+                    inputTime.innerHTML = '<option value="">-- Primero selecciona una fecha --</option>';
+                } else {
+                    showAlert('Ocurrió un error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('No se pudo procesar la reserva automática.', 'error');
+            } finally {
+                // Se restablece el botón de confirmación
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirmar Reserva';
+            }
+        }
+
+        function showAlert(msg, type) {
+            alertBox.innerHTML = msg; // Cambiado a innerHTML para soportar el formato <br> y <strong>
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+        }
+
+        function hideAlert() {
+            alertBox.style.display = 'none';
+        }
+
+        // EFECTO SPOTLIGHT INTERACTIVO (Vanilla JS)
+        document.addEventListener('DOMContentLoaded', () => {
+            const spotlights = document.querySelectorAll('.spotlight-container');
+            
+            spotlights.forEach(container => {
+                // Se crea el elemento del haz de luz de forma dinámica en cada tarjeta
+                const glow = document.createElement('div');
+                glow.className = 'spotlight-glow';
+                container.appendChild(glow);
+
+                container.addEventListener('mousemove', (e) => {
+                    const rect = container.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    // Asignación de la coordenada del cursor sobre el elemento
+                    glow.style.left = `${x}px`;
+                    glow.style.top = `${y}px`;
+                });
+
+                container.addEventListener('mouseenter', () => {
+                    glow.style.opacity = '1';
+                });
+
+                container.addEventListener('mouseleave', () => {
+                    glow.style.opacity = '0';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
